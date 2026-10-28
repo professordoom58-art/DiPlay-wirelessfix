@@ -91,3 +91,4 @@ jobs:
           files: |
             DiPlay-WirelessFix-v0.2.21-b${{ github.run_number }}.apk
             SHA256SUMS.txt
+
