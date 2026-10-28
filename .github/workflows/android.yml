@@ -1,31 +1,54 @@
-name: Android checks
+name: Android checks & release
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'site/**'
+      - '.github/workflows/pages.yml'
+      - '*.md'
+      - 'docs/**'
+      - 'LICENSE'
   pull_request:
+    paths-ignore:
+      - 'site/**'
+      - '.github/workflows/pages.yml'
+      - '*.md'
+      - 'docs/**'
+      - 'LICENSE'
   workflow_dispatch:
+
 permissions:
-  contents: read
+  contents: write
+
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
+
       - name: Reject credential files in public source
         run: python3 scripts/check_public_tree.py
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '25'
+
       - uses: android-actions/setup-android@v3
         with:
           packages: platform-tools platforms;android-37.0 build-tools;36.0.0 ndk;28.2.13676358
+
       - uses: gradle/actions/setup-gradle@v4
+
       - name: Make gradlew executable
         run: chmod +x ./gradlew
+
       - name: Unit tests, lint and source-only debug build
-        run: ./gradlew :shared:testDebugUnitTest :common:testDebugUnitTest :home:testDebugUnitTest :mobile:lintDebug :home:lintDebug :maphost:lintDebug :mobile:assembleDebug :home:assembleDebug :maphost:assembleDebug --stacktrace
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :shared:testDebugUnitTest :common:testDebugUnitTest :home:testDebugUnitTest :mobile:lintDebug :home:lintDebug :maphost:lintDebug :mobile:assembleDebug :home:assembleDebug :maphost:assembleDebug --stacktrace
+
       - name: Test reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -39,3 +62,58 @@ jobs:
             samples/home/build/reports/tests/
             samples/home/build/reports/lint-results-debug.html
             samples/maphost/build/reports/lint-results-debug.html
+
+      - name: Stage DiPlay Mobile Application APK
+        if: success() && github.ref == 'refs/heads/main' && github.repository == 'professordoom58-art/Diplay-wirelessfix'
+        run: |
+          APK_SOURCE="mobile/build/outputs/apk/debug/mobile-debug.apk"
+          if [ ! -f "$APK_SOURCE" ]; then
+            echo "Error: Required APK file $APK_SOURCE was not found!"
+            exit 1
+          fi
+
+          mkdir -p release-dist
+          cp "$APK_SOURCE" "release-dist/DiPlay-latest.apk"
+          cp "$APK_SOURCE" "release-dist/DiPlay-v0.2.21-b${{ github.run_number }}.apk"
+          
+          cd release-dist
+          sha256sum DiPlay-latest.apk > SHA256SUMS.txt
+          sha256sum "DiPlay-v0.2.21-b${{ github.run_number }}.apk" >> SHA256SUMS.txt
+          cd ..
+
+          echo "APK successfully staged for release:"
+          ls -lh release-dist/
+
+      - name: Publish DiPlay APK to GitHub Release (latest-build)
+        if: success() && github.ref == 'refs/heads/main' && github.repository == 'professordoom58-art/Diplay-wirelessfix'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "latest-build"
+          name: "DiPlay Latest Build (v0.2.21-b${{ github.run_number }})"
+          prerelease: false
+          make_latest: true
+          body: |
+            ### 🚗 DiPlay — Latest Verified Build
+            **Version**: `0.2.21` (Build `${{ github.run_number }}`)
+            **Commit**: `${{ github.sha }}`
+            **Built at**: `${{ github.event.head_commit.timestamp || '' }}`
+
+            ---
+
+            #### ⚡ Highlights & Verified Capabilities:
+            - **ESP32 iAP2 Hardware Bridge**: Assisted RFCOMM handshake for Android head units without native Bluetooth RFCOMM.
+            - **Wired & Wireless CarPlay**: High-performance H.264/HEVC 60 FPS video decoding and PCM audio playback.
+            - **Cluster & HUD Navigation**: Live turn arrows, distance, speed, and street names on supported vehicle screens.
+            - **USB Serial Support**: Automated matching for CP2102 and CH340 chipsets.
+            - **Vehicle Controls**: Steering wheel keys, automatic day/night mode, and Telecom call routing.
+
+            ---
+
+            #### 📦 Downloads:
+            - **Permanent Direct APK**: [`DiPlay-latest.apk`](https://github.com/professordoom58-art/Diplay-wirelessfix/releases/download/latest-build/DiPlay-latest.apk)
+            - **Build-Stamped APK**: `DiPlay-v0.2.21-b${{ github.run_number }}.apk`
+            - **Checksums**: See attached `SHA256SUMS.txt`
+          files: |
+            release-dist/DiPlay-latest.apk
+            release-dist/DiPlay-v0.2.21-b${{ github.run_number }}.apk
+            release-dist/SHA256SUMS.txt

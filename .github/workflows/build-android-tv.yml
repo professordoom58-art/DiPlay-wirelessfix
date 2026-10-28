@@ -25,7 +25,9 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
       - name: Test, lint and build without authentication assets
-        run: ./gradlew :shared:testDebugUnitTest :common:testDebugUnitTest :mobile:lintDebug :mobile:assembleDebug --stacktrace
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :shared:testDebugUnitTest :common:testDebugUnitTest :mobile:lintDebug :mobile:assembleDebug --stacktrace
       - uses: actions/upload-artifact@v4
         with:
           name: DiPlay-Android-TV-source-only
