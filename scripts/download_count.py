@@ -11,7 +11,7 @@ import os
 import urllib.request
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'site' / 'assets' / 'downloads.json'
-REPO = os.environ.get('GITHUB_REPOSITORY', 'shihabal3amri/DiPlay')
+REPO = os.environ.get('GITHUB_REPOSITORY', 'professordoom58-art/Diplay-wirelessfix')
 
 
 def releases():
