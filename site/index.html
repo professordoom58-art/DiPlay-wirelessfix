@@ -565,8 +565,8 @@
         <a href="#hardware" class="nav-link">Hardware</a>
         <a href="#quickstart" class="nav-link">Quickstart</a>
       </div>
-      <a href="https://github.com/professordoom58-art/Diplay-wirelessfix/releases" class="nav-cta" target="_blank" rel="noopener">
-        <span>Download APK</span>
+      <a href="https://github.com/professordoom58-art/Diplay-wirelessfix/releases/latest/download/DiPlay-WirelessFix-latest.apk" id="nav-download-btn" class="nav-cta" target="_blank" rel="noopener">
+        <span>Direct Download APK</span>
         <span>↓</span>
       </a>
     </div>
@@ -592,15 +592,18 @@
       </p>
 
       <div class="hero-actions">
-        <a href="https://github.com/professordoom58-art/Diplay-wirelessfix/releases/latest" class="btn btn-primary" target="_blank" rel="noopener">
-          <span>⚡ Download Latest APK</span>
-          <span style="font-size: 0.85em; opacity: 0.8;">(v0.2.21)</span>
+        <a href="https://github.com/professordoom58-art/Diplay-wirelessfix/releases/latest/download/DiPlay-WirelessFix-latest.apk" id="direct-download-btn" class="btn btn-primary" target="_blank" rel="noopener">
+          <span>⚡ Direct Download APK</span>
+          <span id="download-tag" style="font-size: 0.85em; opacity: 0.85;">(Latest Build)</span>
+        </a>
+        <a href="https://github.com/professordoom58-art/Diplay-wirelessfix/releases/latest" class="btn btn-secondary" target="_blank" rel="noopener">
+          <span>View All Releases &amp; Assets ↗</span>
         </a>
         <a href="https://github.com/professordoom58-art/Diplay-wirelessfix" class="btn btn-secondary" target="_blank" rel="noopener">
           <svg height="20" width="20" viewBox="0 0 16 16" fill="currentColor" style="vertical-align: middle;">
             <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
           </svg>
-          <span>View on GitHub</span>
+          <span>GitHub</span>
         </a>
       </div>
 
@@ -763,5 +766,31 @@
     </div>
   </footer>
 
+  <script>
+    // Dynamically resolve latest APK asset from GitHub Releases
+    (async function() {
+      try {
+        const res = await fetch('https://api.github.com/repos/professordoom58-art/Diplay-wirelessfix/releases/latest');
+        if (res.ok) {
+          const data = await res.json();
+          const apk = data.assets && data.assets.find(a => a.name.endsWith('.apk'));
+          if (apk) {
+            const btn = document.getElementById('direct-download-btn');
+            const navBtn = document.getElementById('nav-download-btn');
+            const tag = document.getElementById('download-tag');
+            if (btn) btn.href = apk.browser_download_url;
+            if (navBtn) navBtn.href = apk.browser_download_url;
+            if (tag) {
+              const mb = (apk.size / (1024 * 1024)).toFixed(1);
+              tag.textContent = `(${data.tag_name} • ${mb} MB)`;
+            }
+          }
+        }
+      } catch (err) {
+        // Fallback directly to the releases latest download endpoint
+      }
+    })();
+  </script>
 </body>
 </html>
+

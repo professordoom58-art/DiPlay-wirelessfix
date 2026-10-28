@@ -50,6 +50,7 @@ jobs:
           fi
           RELEASE_NAME="DiPlay-WirelessFix-v0.2.21-b${{ github.run_number }}.apk"
           cp "$APK_PATH" "$RELEASE_NAME"
+          cp "$APK_PATH" "DiPlay-WirelessFix-latest.apk"
           sha256sum "$RELEASE_NAME" > SHA256SUMS.txt
           echo "Built APK: $RELEASE_NAME"
           cat SHA256SUMS.txt
@@ -60,6 +61,7 @@ jobs:
           name: DiPlay-WirelessFix-b${{ github.run_number }}
           path: |
             DiPlay-WirelessFix-v0.2.21-b${{ github.run_number }}.apk
+            DiPlay-WirelessFix-latest.apk
             SHA256SUMS.txt
           retention-days: 14
 
@@ -90,5 +92,6 @@ jobs:
             4. Pair your iPhone and tap **Connect**.
           files: |
             DiPlay-WirelessFix-v0.2.21-b${{ github.run_number }}.apk
+            DiPlay-WirelessFix-latest.apk
             SHA256SUMS.txt
 
